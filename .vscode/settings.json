@@ -1,7 +1,8 @@
 {
-    "python.pythonPath": "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe",
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
     "editor.fontSize": 18,
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
+    "python.linting.pylintEnabled": true,
     
 }

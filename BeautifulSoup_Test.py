@@ -44,33 +44,33 @@ import json
 
 
 def get_articles(dom, date):
-	soup = BeautifulSoup(dom, 'html.parser')
+    soup = BeautifulSoup(dom, 'html.parser')
 
-	articles = []
-	divs = soup.find_all('div', 'r-ent')
-	for d in divs:
-		if d.find('div', 'date').string.strip() == date:  # 注意strip可清除前後空格
-			push_count = 0
-			if d.find('div', 'nrec').string:
-				try:
-					push_count = int(d.find('div', 'nrec').string)
-				except ValueError:
-					pass
-			if d.find('a'):  # 有超連結，表示文章存在，未被刪除
+    articles = []
+    divs = soup.find_all('div', 'r-ent')
+    for d in divs:
+        if d.find('div', 'date').string.strip() == date:  # 注意strip可清除前後空格
+            push_count = 0
+            if d.find('div', 'nrec').string:
+                try:
+                    push_count = int(d.find('div', 'nrec').string)
+                except ValueError:
+                    pass
+            if d.find('a'):  # 有超連結，表示文章存在，未被刪除
 
-				href = d.find('a')['href']
-				title = d.find('a').string
-				articles.append({
-					'title': title,
-					'href': href,
-					'push_count': push_count
-				})
-	return articles
+                href = d.find('a')['href']
+                title = d.find('a').string
+                articles.append({
+                    'title': title,
+                    'href': href,
+                    'push_count': push_count
+                })
+    return articles
 
 
 def get_web_page(url):
     time.sleep(0.5)  # 每次爬取前暫停 0.5 秒以免被 PTT 網站判定為大量惡意爬取
- 	resp = requests.get(
+    resp = requests.get(
         url=url,
         cookies={'over18': '1'}
     )
@@ -78,47 +78,52 @@ def get_web_page(url):
         print('Invalid url:', resp.url)
         return None
     else:
-		return resp.text
+        return resp.text
 
 
 def parse(dom):
     soup = BeautifulSoup(dom, 'html.parser')
-	links = soup.find(id='main-cotent').find_all('a')
-	img_urls = []
-	for link in links:
-		if re.match(r'^https?://(i.)?(m.)?imgur.com', link['href']):  # ptt 有其他格式
-    		img_urls.append(link['href'])
-	return img_urls
+    links = soup.find(id='main-cotent').find_all('a')
+    img_urls = []
+    for link in links:
+        # ptt 有其他格式
+        if re.match(r'^https?://(i.)?(m.)?imgur.com', link['href']):
+            img_urls.append(link['href'])
+    return img_urls
 
 
 def save(img_urls, title):
     if img_urls:
-    	try:
-			dname = title.strip()
-			os.makedirs(dname)
-			for img_url in img_urls:
-    			if img_url.split('//')[1].startswith('m.'):
-					img_url = img_url.replace('//m.', '//i.')
+        try:
+            dname = title.strip()
+            os.makedirs(dname)
+            for img_url in img_urls:
+                if img_url.split('//')[1].startswith('m.'):
+                    img_url = img_url.replace('//m.', '//i.')
                 if not img_url.split('//')[1].startswith('i.'):
-                	img_url = img_url.split('//')[0] + '//i.' + img_url.split('//')[1]
+                    img_url = img_url.split(
+                        '//')[0] + '//i.' + img_url.split('//')[1]
                 if not img_url.endswith('.jpg'):
                     img_url += '.jpg'
                 fname = img_url.split('/')[-1]
                 urllib.request.urlretrieve(img_url, os.path.join(dname, fname))
         except Exception as e:
-			print(e)
-page = get_web_page(PTT_URL + '/bbs/Beauty/index.html')
-if page:
-	date = time.strftime("%m/%d").lstrip('0')  # 今天日期, 去掉開頭的 '0' 以符合 PTT 網站格式
-	# print(date)
-	current_articles = get_articles(page, date)
-	for post in current_articles:
-		print(post)
+            print(e)
+
 
 PTT_URL = 'https://www.ptt.cc'
+page = get_web_page(PTT_URL + '/bbs/Beauty/index.html')
+if page:
+    date = time.strftime("%m/%d").lstrip('0')  # 今天日期, 去掉開頭的 '0' 以符合 PTT 網站格式
+    # print(date)
+    current_articles = get_articles(page, date)
+    for post in current_articles:
+        print(post)
+
+
 for article in current_articles:
-	new_page = get_web_page(PTT_URL + article['href'])
-	if page:
-		img_urls = parse(page)
-		save(img_urls,article['title'])
-		article['num_image'] = len(img_urls)
+    new_page = get_web_page(PTT_URL + article['href'])
+    if page:
+        img_urls = parse(page)
+        save(img_urls, article['title'])
+        article['num_image'] = len(img_urls)
