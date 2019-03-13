@@ -1,1 +1,2 @@
-print ("123")
+print("123")
+str2 = input("123")
