@@ -66,9 +66,9 @@ def divide(seq):
     return [pair, minDis]
 
 
-cases = input()
+cases = int(input())
 for i in range(cases):
-    n = input()
-    seq = [(input(), input()) for x in range(n)]
+    n = int(input())
+    seq = [(int(input()), int(input())) for x in range(n)]
     sorted(seq, key=lambda y: y[0])
     print("优化算法", divide(seq))
