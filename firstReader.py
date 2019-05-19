@@ -4,29 +4,28 @@ import random
 
 
 def writer(name,  re_wr_lock):
-    global now_time
+    global start_time
     global write_counter
     global data
     global time_ex
     while 1 == 1:
-        if re_wr_lock.acquire():
-            print(name, "enter critical section.")
-            data += random.randint(1, 5)
-            write_counter += 1
-            print(name, "write data to ", data, ".")
-            sleep_time = random.randint(1, 3)
-            print(name, "sleep for ", sleep_time, " seconds.")
-            time.sleep(sleep_time)
-            print(name, "....Wake up! Exit critical section.")
+        re_wr_lock.acquire()
+        print(name, "enter critical section.")
+        data += random.randint(1, 5)
+        write_counter += 1
+        print(name, "write data to ", data, ".")
+        sleep_time = random.randint(1, 3)
+        print(name, "sleep for ", sleep_time, " seconds.")
+        time.sleep(sleep_time)
+        print(name, "....Wake up! Exit critical section.")
         re_wr_lock.release()
-        along_time = time.time()-now_time
-        if along_time > time_ex:
+        if time.time()-start_time > time_ex:
             break
         time.sleep(sleep_time)
 
 
 def reader(name, mutex, re_wr_lock):
-    global now_time
+    global start_time
     global read_counter
     global data
     global time_ex
@@ -34,20 +33,20 @@ def reader(name, mutex, re_wr_lock):
     while 1 == 1:
         if mutex._value == readernum:
             re_wr_lock.acquire()
-        if mutex.acquire() and re_wr_lock.locked():
-            print(name, "enter critical section.")
-            read_counter += 1
-            print(name, "read data ", data, ".")
-            sleep_time = random.randint(1, 3)
-            print(name, "sleep for ", sleep_time, " seconds.")
-            time.sleep(sleep_time)
-            print(name, "....Wake up! Exit critical section.")
+        mutex.acquire()
+        re_wr_lock.locked()
+        print(name, "enter critical section.")
+        read_counter += 1
+        print(name, "read data ", data, ".")
+        sleep_time = random.randint(1, 3)
+        print(name, "sleep for ", sleep_time, " seconds.")
+        time.sleep(sleep_time)
+        print(name, "....Wake up! Exit critical section.")
 
-            mutex.release()
+        mutex.release()
         if mutex._value == readernum and re_wr_lock.locked():
             re_wr_lock.release()
-        along_time = time.time()-now_time
-        if along_time > time_ex:
+        if time.time()-start_time > time_ex:
             break
         time.sleep(sleep_time)
 
@@ -62,7 +61,7 @@ print("Intnitial Data :", data)
 print("===============================================")
 now_time = 0
 start_time = time.time()
-time_ex = 12000
+time_ex = 10
 write_counter = 0
 read_counter = 0
 rethread = []
