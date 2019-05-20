@@ -61,7 +61,7 @@ print("Intnitial Data :", data)
 print("===============================================")
 now_time = 0
 start_time = time.time()
-time_ex = 10
+time_ex = 120
 write_counter = 0
 read_counter = 0
 rethread = []
